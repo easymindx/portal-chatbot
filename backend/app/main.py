@@ -2,6 +2,9 @@ import logging
 import os
 import traceback
 from typing import Callable
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.dependencies import get_current_user
 from app.repositories.common import (
