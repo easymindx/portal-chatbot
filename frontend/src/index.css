@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.amplify-button--primary {
+  background-color: var(
+    --amplify-components-button-primary-background-color
+  ) !important;
+}
