@@ -140,7 +140,7 @@ export type Conversation = ConversationMeta & {
 };
 
 export type PutFeedbackRequest = {
-  thumbsUp: boolean;
+  thumbs_up: boolean;
   category: null | string;
   comment: null | string;
 };

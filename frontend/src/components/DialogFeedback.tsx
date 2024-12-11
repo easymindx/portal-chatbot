@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BaseProps } from '../@types/common';
+import {Feedback, PutFeedbackRequest } from '../@types/conversation';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
-import { useTranslation } from 'react-i18next';
-import Textarea from './Textarea';
 import Select from './Select';
-import { Feedback } from '../@types/conversation';
+import Textarea from './Textarea';
 
 type Props = BaseProps & {
   isOpen: boolean;
   thumbsUp: boolean;
   feedback?: Feedback;
-  onSubmit: (feedback: Feedback) => void;
+  onSubmit: (feedback: PutFeedbackRequest) => void;
   onClose: () => void;
 };
 
@@ -20,13 +20,13 @@ const DialogFeedback: React.FC<Props> = (props) => {
   const categoryOptions = t('feedbackDialog.categories', {
     returnObjects: true,
   });
-  const [category, setCategory] = useState<string | null>(
-    props.feedback?.category || null
+  const [category, setCategory] = useState<string>(
+    props.feedback?.category || categoryOptions[0].value
   );
   const [comment, setComment] = useState<string>(props.feedback?.comment || '');
 
   const handleSubmit = () => {
-    props.onSubmit({ thumbsUp: props.thumbsUp, category, comment });
+    props.onSubmit({ thumbs_up: props.thumbsUp, category: props.thumbsUp ? null : category, comment });
   };
 
   return (
@@ -34,7 +34,7 @@ const DialogFeedback: React.FC<Props> = (props) => {
       <div className="flex flex-col gap-2">
         <div>{t('feedbackDialog.content')}</div>
 
-        {!props.thumbsUp && category && (
+        {!props.thumbsUp && (
           <Select
             label={t('feedbackDialog.categoryLabel')}
             value={category}
