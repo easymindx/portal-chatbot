@@ -15,7 +15,6 @@ import {
   PiCompass,
   PiEnvelopeBold,
   PiGlobe,
-  PiNotePencil,
   PiPencilLine,
   PiRobot,
   PiShareNetwork,
@@ -216,12 +215,6 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     }
   }, [conversations, prevConversations]);
 
-  const onClickNewChat = useCallback(() => {
-    newChat();
-    closeSamllDrawer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const onClickNewBotChat = useCallback(
     () => {
       newChat();
@@ -267,18 +260,19 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
             <DrawerItem
               isActive={false}
-              icon={<PiNotePencil />}
-              to="/"
-              onClick={onClickNewChat}
-              labelComponent={t('button.newChat')}
-            />
-            <DrawerItem
-              isActive={false}
               icon={<PiCompass />}
               to="/bot/explore"
               labelComponent={getPageLabel('/bot/explore')}
               onClick={closeSamllDrawer}
             />
+            {props.isAllowFeedback && (
+              <DrawerItem
+                isActive={false}
+                to={`/feedback`}
+                icon={<PiEnvelopeBold />}
+                labelComponent={'Feedback'}
+              />
+            )}
             {props.isAdmin && (
               <ExpandableDrawerGroup
                 label={t('app.adminConsoles')}
@@ -331,18 +325,6 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                   />
                 ))}
             </ExpandableDrawerGroup>
-            {props.isAllowFeedback && (
-              <ExpandableDrawerGroup
-                label={'Feedback'}
-                className="border-t pt-1">
-                  <DrawerItem
-                    isActive={false}
-                    to={`/feedback`}
-                    icon={<PiEnvelopeBold />}
-                    labelComponent={'Feedback'}
-                  />
-              </ExpandableDrawerGroup>
-            )}
             <ExpandableDrawerGroup
               label={t('app.conversationHistory')}
               className="border-t pt-1">
