@@ -1,4 +1,4 @@
-from typing import Literal, Annotated
+from typing import Literal, Annotated, TypedDict
 
 from app.routes.schemas.base import BaseSchema
 from app.repositories.models.common import Base64EncodedBytes
@@ -80,11 +80,16 @@ class FeedbackOutput(BaseSchema):
     category: str
     comment: str
 
+class User(TypedDict):
+    id: str
+    email: str
+
 class FeedbackMessage(BaseSchema):
     conversation_id: str
     message_id: str
     create_time: float
     feedback: FeedbackOutput
+    user: User
 
 class FeedbackList(BaseSchema):
     feedbacks: list[FeedbackMessage]

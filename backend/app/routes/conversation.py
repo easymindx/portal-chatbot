@@ -87,10 +87,10 @@ def get_related_document(
     "/conversation/feedback", 
     response_model=list[FeedbackMessage]
 )
-def get_feedback(request: Request) -> list[FeedbackMessage]:
+async def get_feedback(request: Request) -> list[FeedbackMessage]:
     """Get feedback."""
     current_user: User = request.state.current_user
-    return find_all_feedbacks(
+    return await find_all_feedbacks(
         user_id=current_user.id,
     )
 

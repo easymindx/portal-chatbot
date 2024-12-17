@@ -26,6 +26,7 @@ from app.repositories.models.conversation import (
     RelatedDocumentModel,
     ToolResultModel,
 )
+from app.repositories.usage_analysis import _find_cognito_users_by_ids
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -330,7 +331,7 @@ def update_feedback(
     return response
 
 
-def find_all_feedbacks(user_id: str):
+async def find_all_feedbacks(user_id: str):
     table = _get_table_client(user_id)
     items = []
 
@@ -350,7 +351,7 @@ def find_all_feedbacks(user_id: str):
 
 
     feedbacks = []
-    
+    user_ids = []
     for item in items:
         if "MessageMap" not in item:
             continue
@@ -358,19 +359,26 @@ def find_all_feedbacks(user_id: str):
         conv_id = decompose_conv_id(item["SK"])
         
         for message_id, message in message_map.items():
-            if "feedback" not in message:
-                continue
-
-            feedback = message["feedback"]
-            if message_id != "system" and message_id != "instruction" and feedback != None:
+            feedback = message.get("feedback")
+            if message_id not in ["system", "instruction"] and feedback:
                 feedback_message = FeedbackMessageModel(
                     conversation_id=conv_id,
                     message_id=message_id,
                     create_time=float(message["create_time"]),
-                    feedback=FeedbackModel(**feedback)
+                    feedback=FeedbackModel(**feedback),
+                    user={"id": item["PK"], "email": ""},
                 )
                 feedbacks.append(feedback_message.to_schema())
+                user_ids.append(item["PK"])
 
+    # Populate user emails from cognito
+    users = await _find_cognito_users_by_ids(user_ids)
+    users_dict = {user["id"]: user for user in users}
+
+    for feedback in feedbacks:
+        feedback.user["email"] = users_dict.get(feedback.user["id"])["email"]
+
+    # Sort feedbacks by create time
     feedbacks.sort(key=lambda x: x.create_time, reverse=True)
     
     return feedbacks
