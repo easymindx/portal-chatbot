@@ -52,10 +52,10 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
                 {/* Top Row: User email and link */}
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-medium text-gray-700">
-                    User: {item.user.email || 'N/A'}
+                    User: <span className="font-semibold">{item.user.email}</span>
                   </span>
                   <a
-                    href={`/chat/${item.conversationId}`}
+                    href={`/${item.conversationId}#message-${item.messageId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:text-blue-700 flex items-center"
@@ -66,7 +66,7 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
                 {/* Feedback comment */}
                 <div className="text-gray-600 text-sm">
                   {item.feedback.comment ? (
-                    <p>{item.feedback.comment}</p>
+                    <p className='font-bold'>{item.feedback.comment}</p>
                   ) : (
                     <p className="italic text-gray-400">No comment provided</p>
                   )}

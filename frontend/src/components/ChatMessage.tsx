@@ -125,7 +125,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3')}>
+    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3')} id={`message-${chatContent?.id}`}>
       <div className="col-start-1 lg:col-start-2 ">
         {(chatContent?.sibling.length ?? 0) > 1 && (
           <div className="flex items-center justify-start text-sm lg:justify-end">
