@@ -371,6 +371,8 @@ def find_all_feedbacks(user_id: str):
                 )
                 feedbacks.append(feedback_message.to_schema())
 
+    feedbacks.sort(key=lambda x: x.create_time, reverse=True)
+    
     return feedbacks
 
 def store_related_documents(
