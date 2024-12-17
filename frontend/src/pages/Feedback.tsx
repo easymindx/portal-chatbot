@@ -1,35 +1,33 @@
 import React, { useMemo } from 'react';
+import { PiArrowSquareOutFill, PiThumbsDownFill, PiThumbsUpFill } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
-import { PiThumbsUpFill, PiThumbsDownFill } from 'react-icons/pi';
+import { FeedbackMessage } from '../@types/conversation';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
-
-const mockFeedbackData = {
-  positive: [
-    { id: '1', message: 'Great response!', timestamp: '2024-12-01', user: 'User1' },
-    { id: '2', message: 'Helpful explanation!', timestamp: '2024-12-02', user: 'User2' },
-  ],
-  negative: [
-    { id: '3', message: 'The response was unclear.', timestamp: '2024-12-01', user: 'User3' },
-    { id: '4', message: 'Did not answer my question.', timestamp: '2024-12-02', user: 'User4' },
-  ],
-};
-
-type FeedbackItem = {
-  id: string;
-  message: string;
-  timestamp: string;
-  user: string;
-};
+import useFeedback from '../hooks/useFeedback';
 
 type Props = {
   className?: string;
 };
 
 const FeedbackPage: React.FC<Props> = ({ className }) => {
-  const positiveFeedback = useMemo(() => mockFeedbackData.positive, []);
-  const negativeFeedback = useMemo(() => mockFeedbackData.negative, []);
+  const { feedbacks } = useFeedback();
+  const [positiveFeedbacks, negativeFeedbacks] = useMemo(() => {
+    if (!feedbacks) {
+      return [[], []];
+    }
+    const positive: FeedbackMessage[] = [];
+    const negative:FeedbackMessage[] = [];
+    feedbacks.forEach((f) => {
+      if (f.feedback.thumbsUp) {
+        positive.push(f);
+      } else {
+        negative.push(f);
+      }
+    });
+    return [positive, negative];
+  }, [feedbacks]);
 
-  const renderFeedbackList = (feedback: FeedbackItem[], isPositive: boolean) => (
+  const renderFeedbackList = (feedback: FeedbackMessage[], isPositive: boolean) => (
     <div className={twMerge('p-4 border rounded-md', isPositive ? 'bg-green-50' : 'bg-red-50')}>
       <h3 className="text-xl font-bold mb-4 flex items-center">
         {isPositive ? (
@@ -47,11 +45,35 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
         >
           <ul className="space-y-4 my-2 px-5">
             {feedback.map((item) => (
-              <li key={item.id} className="border-b pb-2">
-                <p className="text-sm text-gray-600">{item.message}</p>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>User: {item.user}</span>
-                  <span>Date: {new Date(item.timestamp).toLocaleDateString()}</span>
+              <li 
+                key={item.conversationId + item.messageId}
+                className="border-b pb-2 flex flex-col gap-2"
+              >
+                {/* Top Row: User email and link */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium text-gray-700">
+                    User: {item.user.email || 'N/A'}
+                  </span>
+                  <a
+                    href={`/chat/${item.conversationId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700 flex items-center"
+                  >
+                    Open Chat <PiArrowSquareOutFill className="ml-1" />
+                  </a>
+                </div>
+                {/* Feedback comment */}
+                <div className="text-gray-600 text-sm">
+                  {item.feedback.comment ? (
+                    <p>{item.feedback.comment}</p>
+                  ) : (
+                    <p className="italic text-gray-400">No comment provided</p>
+                  )}
+                </div>
+                {/* Date */}
+                <div className="text-xs text-gray-500">
+                  Date: {new Date(item.createTime).toLocaleDateString()}
                 </div>
               </li>
             ))}
@@ -65,8 +87,8 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
 
   return (
     <div className={twMerge(className, 'grid grid-cols-1 gap-4 p-6 lg:grid-cols-2}')}>
-      {renderFeedbackList(positiveFeedback, true)}
-      {renderFeedbackList(negativeFeedback, false)}
+      {renderFeedbackList(positiveFeedbacks, true)}
+      {renderFeedbackList(negativeFeedbacks, false)}
     </div>
   );
 };

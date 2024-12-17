@@ -1,5 +1,6 @@
 import useHttp from './useHttp';
-import { PutFeedbackRequest, Feedback } from '../@types/conversation';
+import { PutFeedbackRequest, Feedback, FeedbackMessage } from '../@types/conversation';
+import { mutate, MutatorCallback } from 'swr';
 
 const useFeedbackApi = () => {
   const http = useHttp();
@@ -14,6 +15,20 @@ const useFeedbackApi = () => {
         `/conversation/${conversationId}/${messageId}/feedback`,
         req
       );
+    },
+    getFeedbacks: () => {
+      return http.get<FeedbackMessage[]>('conversation/feedback', {
+        keepPreviousData: true,
+      });
+    },
+    mutateFeedbacks: (
+      feedbacks?:
+        | FeedbackMessage[]
+        | Promise<FeedbackMessage[]>
+        | MutatorCallback<FeedbackMessage[]>,
+      options?: Parameters<typeof mutate>[2]
+    ) => {
+      return mutate('feedbacks', feedbacks, options);
     },
   };
 };

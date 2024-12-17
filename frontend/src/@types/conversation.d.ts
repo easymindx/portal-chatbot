@@ -150,3 +150,16 @@ export type Feedback = {
   category: string | null;
   comment: string | null;
 };
+
+export type User = {
+  id: string;
+  email: string;
+};
+
+export type FeedbackMessage = {
+  conversationId: string;
+  messageId: string;
+  createTime: number;
+  feedback: Feedback;
+  user: User;
+}
