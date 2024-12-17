@@ -24,6 +24,8 @@ from app.routes.schemas.conversation import (
     ToolResultContentBody,
     ToolResultContent,
     RelatedDocument,
+    FeedbackMessage,
+    FeedbackOutput,
 )
 from app.utils import generate_presigned_url
 
@@ -190,6 +192,26 @@ class FeedbackModel(BaseModel):
     category: str
     comment: str
 
+    def to_schema(self) -> FeedbackOutput:
+        return FeedbackOutput(
+            thumbs_up=self.thumbs_up,
+            category=self.category,
+            comment=self.comment,
+        )
+
+class FeedbackMessageModel(BaseModel):
+    conversation_id: str
+    message_id: str
+    create_time: float
+    feedback: FeedbackModel
+
+    def to_schema(self) -> FeedbackMessage:
+        return FeedbackMessage(
+            conversation_id=self.conversation_id,
+            message_id=self.message_id,
+            create_time=self.create_time,
+            feedback=self.feedback.to_schema(),
+        )
 
 class ChunkModel(BaseModel):
     content: str

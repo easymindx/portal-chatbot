@@ -6,6 +6,7 @@ from app.repositories.conversation import (
     find_related_documents_by_conversation_id,
     find_related_document_by_id,
     update_feedback,
+    find_all_feedbacks,
 )
 from app.repositories.models.conversation import FeedbackModel
 from app.routes.schemas.conversation import (
@@ -15,6 +16,7 @@ from app.routes.schemas.conversation import (
     ConversationMetaOutput,
     FeedbackInput,
     FeedbackOutput,
+    FeedbackMessage,
     NewTitleInput,
     ProposedTitle,
     RelatedDocument,
@@ -81,6 +83,16 @@ def get_related_document(
     )
     return related_document.to_schema()
 
+@router.get(
+    "/conversation/feedback", 
+    response_model=list[FeedbackMessage]
+)
+def get_feedback(request: Request) -> list[FeedbackMessage]:
+    """Get feedback."""
+    current_user: User = request.state.current_user
+    return find_all_feedbacks(
+        user_id=current_user.id,
+    )
 
 @router.get("/conversation/{conversation_id}", response_model=Conversation)
 def get_conversation(request: Request, conversation_id: str):

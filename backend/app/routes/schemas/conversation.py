@@ -80,6 +80,14 @@ class FeedbackOutput(BaseSchema):
     category: str
     comment: str
 
+class FeedbackMessage(BaseSchema):
+    conversation_id: str
+    message_id: str
+    create_time: float
+    feedback: FeedbackOutput
+
+class FeedbackList(BaseSchema):
+    feedbacks: list[FeedbackMessage]
 
 class Chunk(BaseSchema):
     content: str

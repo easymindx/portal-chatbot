@@ -4,7 +4,7 @@ import os
 from decimal import Decimal as decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 from pydantic import TypeAdapter
 
@@ -21,6 +21,7 @@ from app.repositories.models.conversation import (
     ConversationMeta,
     ConversationModel,
     FeedbackModel,
+    FeedbackMessageModel,
     MessageModel,
     RelatedDocumentModel,
     ToolResultModel,
@@ -328,6 +329,49 @@ def update_feedback(
     logger.info(f"Updated feedback response: {response}")
     return response
 
+
+def find_all_feedbacks(user_id: str):
+    table = _get_table_client(user_id)
+    items = []
+
+    try:
+        response = table.scan(
+            FilterExpression=Attr('MessageMap').contains('"feedback": {')
+        )
+        items.extend(response.get("Items", []))
+
+        while 'LastEvaluatedKey' in response:
+            print("Scanning next page...")
+            response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            items.extend(response.get("Items", []))
+        
+    except Exception as e:
+        print(f"Error scanning table: {e}")
+
+
+    feedbacks = []
+    
+    for item in items:
+        if "MessageMap" not in item:
+            continue
+        message_map = json.loads(item["MessageMap"])
+        conv_id = decompose_conv_id(item["SK"])
+        
+        for message_id, message in message_map.items():
+            if "feedback" not in message:
+                continue
+
+            feedback = message["feedback"]
+            if message_id != "system" and message_id != "instruction" and feedback != None:
+                feedback_message = FeedbackMessageModel(
+                    conversation_id=conv_id,
+                    message_id=message_id,
+                    create_time=float(message["create_time"]),
+                    feedback=FeedbackModel(**feedback)
+                )
+                feedbacks.append(feedback_message.to_schema())
+
+    return feedbacks
 
 def store_related_documents(
     user_id: str,
