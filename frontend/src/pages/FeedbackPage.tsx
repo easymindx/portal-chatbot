@@ -40,7 +40,7 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
       </h3>
       {feedback.length > 0 ? (
         <ExpandableDrawerGroup
-          isDefaultShow={false}
+          isDefaultShow={!isPositive}
           label={"Feedback responses"}
           className="py-2"
         >
@@ -63,17 +63,18 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
                     Open Chat <PiArrowSquareOutFill className="ml-1" />
                   </Link>
                 </div>
+                {/* Date */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>Category: <span className='font-semibold'>{item.feedback.category}</span></span>
+                  <span>Date: {new Date(item.createTime).toLocaleDateString()}</span>
+                </div>
                 {/* Feedback comment */}
                 <div className="text-gray-600 text-sm">
                   {item.feedback.comment ? (
-                    <p className='font-bold'>{item.feedback.comment}</p>
+                    <p>{item.feedback.comment}</p>
                   ) : (
                     <p className="italic text-gray-400">No comment provided</p>
                   )}
-                </div>
-                {/* Date */}
-                <div className="text-xs text-gray-500">
-                  Date: {new Date(item.createTime).toLocaleDateString()}
                 </div>
               </li>
             ))}
