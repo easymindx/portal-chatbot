@@ -73,7 +73,7 @@ const bedrockRegionResources = new BedrockRegionResourcesStack(
   }
 );
 
-const chat = new BedrockChatStack(app, `BedrockChatStack`, {
+const chat = new BedrockChatStack(app, `cdr-ai-poc-chatbot`, {
   env: {
     // account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,

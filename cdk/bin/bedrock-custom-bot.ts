@@ -163,7 +163,7 @@ console.log("overlapPercentage: ", overlapPercentage);
 
 const bedrockCustomBotStack = new BedrockCustomBotStack(
   app,
-  `BrChatKbStack${botId}`,
+  `cdr_ai_poc_chatbot_stack_${botId}`,
   {
     env: {
       // account: process.env.CDK_DEFAULT_ACCOUNT,
