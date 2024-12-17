@@ -14,7 +14,7 @@ import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx
 import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import ChatPage from './pages/ChatPage.tsx';
-import FeedbackPage from './pages/Feedback.tsx';
+import FeedbackPage from './pages/FeedbackPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 
 const rootChildren = [
@@ -60,6 +60,10 @@ const rootChildren = [
   },
   {
     path: '/:conversationId',
+    element: <ChatPage />,
+  },
+  {
+    path: '/:conversationId/:userId',
     element: <ChatPage />,
   },
   {
@@ -112,6 +116,7 @@ export const usePageTitlePathPattern = () => {
   const conversationRoutes: ConversationRoutes = useMemo(
     () => [
       { path: '/:conversationId' },
+      { path: '/:conversationId/:userId' },
       { path: '/bot/:botId' },
       { path: '/' },
       { path: '*' },

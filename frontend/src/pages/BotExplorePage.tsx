@@ -12,7 +12,7 @@ import {
   PiTrashBold,
   PiUsers,
 } from 'react-icons/pi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useBot from '../hooks/useBot';
 import { BotMeta } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
@@ -36,7 +36,8 @@ const BotExplorePage: React.FC = () => {
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
   const [targetShareIndex, setTargetShareIndex] = useState<number>();
 
-  const { newChat } = useChat();
+  const { userId } = useParams();
+  const { newChat } = useChat(userId);
   const {
     myBots,
     recentlyUsedSharedBots,

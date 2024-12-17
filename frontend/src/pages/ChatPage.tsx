@@ -3,15 +3,10 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from 'react';
-import InputChatContent from '../components/InputChatContent';
-import useChat from '../hooks/useChat';
-import { AttachmentType } from '../hooks/useChat';
-import ChatMessage from '../components/ChatMessage';
-import useScroll from '../hooks/useScroll';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   PiArrowsCounterClockwise,
   PiLink,
@@ -21,41 +16,48 @@ import {
   PiStarFill,
   PiWarningCircleFill,
 } from 'react-icons/pi';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Button from '../components/Button';
-import { useTranslation } from 'react-i18next';
-import SwitchBedrockModel from '../components/SwitchBedrockModel';
-import useSnackbar from '../hooks/useSnackbar';
-import useBot from '../hooks/useBot';
-import useConversation from '../hooks/useConversation';
-import ButtonPopover from '../components/PopoverMenu';
+import ChatMessage from '../components/ChatMessage';
+import InputChatContent from '../components/InputChatContent';
 import PopoverItem from '../components/PopoverItem';
+import ButtonPopover from '../components/PopoverMenu';
+import SwitchBedrockModel from '../components/SwitchBedrockModel';
+import useBot from '../hooks/useBot';
+import useChat, { AttachmentType } from '../hooks/useChat';
+import useConversation from '../hooks/useConversation';
+import useScroll from '../hooks/useScroll';
+import useSnackbar from '../hooks/useSnackbar';
 
-import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
-import ButtonIcon from '../components/ButtonIcon';
-import StatusSyncBot from '../components/StatusSyncBot';
-import Alert from '../components/Alert';
-import useBotSummary from '../hooks/useBotSummary';
-import useModel from '../hooks/useModel';
-import {
-  AgentState,
-  AgentToolsProps,
-} from '../features/agent/xstates/agentThink';
-import { getRelatedDocumentsOfToolUse } from '../features/agent/utils/AgentUtils';
-import { SyncStatus } from '../constants';
-import { BottomHelper } from '../features/helper/components/BottomHelper';
-import { useIsWindows } from '../hooks/useIsWindows';
 import {
   DisplayMessageContent,
   PutFeedbackRequest,
 } from '../@types/conversation';
+import Alert from '../components/Alert';
+import ButtonIcon from '../components/ButtonIcon';
+import StatusSyncBot from '../components/StatusSyncBot';
+import { SyncStatus } from '../constants';
+import { getRelatedDocumentsOfToolUse } from '../features/agent/utils/AgentUtils';
+import {
+  AgentState,
+  AgentToolsProps,
+} from '../features/agent/xstates/agentThink';
+import { BottomHelper } from '../features/helper/components/BottomHelper';
+import useBotSummary from '../hooks/useBotSummary';
+import { useIsWindows } from '../hooks/useIsWindows';
+import useModel from '../hooks/useModel';
 import usePostMessageStreaming from '../hooks/usePostMessageStreaming';
+import { copyBotUrl } from '../utils/BotUtils';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { open: openSnackbar } = useSnackbar();
   const { errorDetail } = usePostMessageStreaming();
+
+  const { conversationId: paramConversationId, botId: paramBotId, userId } =
+    useParams();
 
   const {
     agentThinking,
@@ -76,7 +78,24 @@ const ChatPage: React.FC = () => {
     getShouldContinue,
     relatedDocuments,
     giveFeedback,
-  } = useChat();
+  } = useChat(userId);
+
+  const location = useLocation();
+  const feedbackMessageId = useMemo(() => {
+    if (location.hash) {
+      return location.hash.slice(1);
+    }
+    return null;
+  }, [location]);
+
+  useEffect(() => {
+    if (feedbackMessageId) {
+      const element = document.getElementById(feedbackMessageId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [feedbackMessageId, messages]);
 
   // Error Handling
   useEffect(() => {
@@ -96,9 +115,6 @@ const ChatPage: React.FC = () => {
   const { getBotId } = useConversation();
 
   const { scrollToBottom, scrollToTop } = useScroll();
-
-  const { conversationId: paramConversationId, botId: paramBotId } =
-    useParams();
 
   const botId = useMemo(() => {
     return paramBotId ?? getBotId(conversationId);
@@ -151,10 +167,10 @@ const ChatPage: React.FC = () => {
   const inputBotParams = useMemo(() => {
     return botId
       ? {
-          botId: botId,
-          hasKnowledge: bot?.hasKnowledge ?? false,
-          hasAgent: bot?.hasAgent ?? false,
-        }
+        botId: botId,
+        hasKnowledge: bot?.hasKnowledge ?? false,
+        hasAgent: bot?.hasAgent ?? false,
+      }
       : undefined;
   }, [bot?.hasKnowledge, botId, bot?.hasAgent]);
 
@@ -318,6 +334,8 @@ const ChatPage: React.FC = () => {
   const ChatMessageWithRelatedDocuments: React.FC<{
     chatContent: DisplayMessageContent;
     isStreaming: boolean;
+    isSelected?: boolean;
+    isDisabled?: boolean;
     onChangeMessageId?: (messageId: string) => void;
     onSubmit?: (messageId: string, content: string) => void;
     onSubmitFeedback?: (
@@ -407,6 +425,8 @@ const ChatPage: React.FC = () => {
         tools={tools}
         chatContent={message}
         isStreaming={props.isStreaming}
+        isSelected={props.isSelected}
+        isDisabled={props.isDisabled}
         relatedDocuments={relatedDocumentsForCitation}
         onChangeMessageId={props.onChangeMessageId}
         onSubmit={props.onSubmit}
@@ -421,7 +441,7 @@ const ChatPage: React.FC = () => {
       onDragOver={onDragOver}
       onDrop={endDnd}
       onDragEnd={endDnd}>
-      <div className="flex-1 overflow-hidden">
+      <div>
         <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2">
           <div className="flex w-full justify-between">
             <div className="p-2">
@@ -497,12 +517,13 @@ const ChatPage: React.FC = () => {
                   {messages?.map((message, idx, array) => (
                     <div
                       key={idx}
-                      className={`${
-                        message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-                      }`}>
+                      className={`${message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                        }`}>
                       <ChatMessageWithRelatedDocuments
                         chatContent={message}
                         isStreaming={postingMessage && idx + 1 === array.length}
+                        isSelected={message.id === feedbackMessageId}
+                        isDisabled={feedbackMessageId !== null}
                         onChangeMessageId={onChangeCurrentMessageId}
                         onSubmit={onSubmitEditedContent}
                         onSubmitFeedback={(messageId, feedback) => {
@@ -541,56 +562,58 @@ const ChatPage: React.FC = () => {
         </section>
       </div>
 
-      <div
-        className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 -translate-y-1/2' : ''}`}>
-        {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
-          <div className="mb-8 w-1/2">
-            <Alert
-              severity="warning"
-              title={t('bot.alert.sync.incomplete.title')}>
-              {t('bot.alert.sync.incomplete.body')}
-            </Alert>
-          </div>
-        )}
-        {messages.length === 0 && (
-          <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
-            {bot?.conversationQuickStarters?.map((qs, idx) => (
-              <div
-                key={idx}
-                className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink/20 bg-white p-2  text-sm text-dark-gray  hover:shadow-lg hover:shadow-gray"
-                onClick={() => {
-                  onSend(qs.example);
-                }}>
-                <div>
-                  <PiPenNib />
+      {feedbackMessageId ? null : (
+        <div
+          className={`bottom-0 z-0 flex w-full flex-col items-center justify-center ${messages.length === 0 ? 'absolute top-1/2 -translate-y-1/2' : ''}`}>
+          {bot && bot.syncStatus !== SyncStatus.SUCCEEDED && (
+            <div className="mb-8 w-1/2">
+              <Alert
+                severity="warning"
+                title={t('bot.alert.sync.incomplete.title')}>
+                {t('bot.alert.sync.incomplete.body')}
+              </Alert>
+            </div>
+          )}
+          {messages.length === 0 && (
+            <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
+              {bot?.conversationQuickStarters?.map((qs, idx) => (
+                <div
+                  key={idx}
+                  className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink/20 bg-white p-2  text-sm text-dark-gray  hover:shadow-lg hover:shadow-gray"
+                  onClick={() => {
+                    onSend(qs.example);
+                  }}>
+                  <div>
+                    <PiPenNib />
+                  </div>
+                  {qs.title}
                 </div>
-                {qs.title}
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        <InputChatContent
-          dndMode={dndMode}
-          disabledSend={postingMessage || hasError}
-          disabledRegenerate={postingMessage || hasError}
-          disabledContinue={postingMessage || hasError}
-          disabled={disabledInput}
-          placeholder={
-            disabledInput
-              ? t('bot.label.notAvailableBotInputMessage')
-              : undefined
-          }
-          canRegenerate={messages.length > 1}
-          canContinue={getShouldContinue()}
-          isLoading={postingMessage}
-          isNewChat={messages.length == 0}
-          onSend={onSend}
-          onRegenerate={onRegenerate}
-          continueGenerate={onContinueGenerate}
-          ref={focusInputRef}
-        />
-      </div>
+          <InputChatContent
+            dndMode={dndMode}
+            disabledSend={postingMessage || hasError}
+            disabledRegenerate={postingMessage || hasError}
+            disabledContinue={postingMessage || hasError}
+            disabled={disabledInput}
+            placeholder={
+              disabledInput
+                ? t('bot.label.notAvailableBotInputMessage')
+                : undefined
+            }
+            canRegenerate={messages.length > 1}
+            canContinue={getShouldContinue()}
+            isLoading={postingMessage}
+            isNewChat={messages.length == 0}
+            onSend={onSend}
+            onRegenerate={onRegenerate}
+            continueGenerate={onContinueGenerate}
+            ref={focusInputRef}
+          />
+        </div>
+      )}
       <BottomHelper />
     </div>
   );

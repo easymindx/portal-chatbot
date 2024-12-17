@@ -98,8 +98,9 @@ async def get_feedback(request: Request) -> list[FeedbackMessage]:
 def get_conversation(request: Request, conversation_id: str):
     """Get a conversation history"""
     current_user: User = request.state.current_user
+    user_id = request.query_params.get("userId", None)
 
-    output = fetch_conversation(current_user.id, conversation_id)
+    output = fetch_conversation(user_id if user_id else current_user.id, conversation_id)
     return output
 
 

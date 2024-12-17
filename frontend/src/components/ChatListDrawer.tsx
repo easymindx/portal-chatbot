@@ -58,8 +58,8 @@ type ItemProps = BaseProps & {
 
 const Item: React.FC<ItemProps> = (props) => {
   const { pathname } = useLocation();
-  const { conversationId: pathParam } = useParams();
-  const { conversationId } = useChat();
+  const { conversationId: pathParam, userId } = useParams();
+  const { conversationId } = useChat(userId);
   const [tempLabel, setTempLabel] = useState('');
   const [editing, setEditing] = useState(false);
 
@@ -194,8 +194,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     useState<typeof conversations>();
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
 
-  const { newChat, conversationId } = useChat();
-  const { botId } = useParams();
+  const { botId, userId } = useParams();
+  const { newChat, conversationId } = useChat(userId);
 
   useEffect(() => {
     setPrevConversations(conversations);

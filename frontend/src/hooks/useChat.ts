@@ -213,7 +213,7 @@ const useChatState = create<{
   };
 });
 
-const useChat = () => {
+const useChat = (userId?: string) => {
   const [agentThinking, send] = useMachine(agentThinkingState);
 
   const {
@@ -248,7 +248,7 @@ const useChat = () => {
     mutate,
     isLoading: loadingConversation,
     error: conversationError,
-  } = conversationApi.getConversation(conversationId);
+  } = conversationApi.getConversation(conversationId, userId);
   const { syncConversations } = useConversation();
 
   const {
@@ -256,7 +256,7 @@ const useChat = () => {
     mutate: reloadRelatedDocuments,
     isLoading: loadingRelatedDocuments,
     error: relatedDocumentsError,
-  } = conversationApi.getRelatedDocuments(conversationId);
+  } = conversationApi.getRelatedDocuments(conversationId, userId);
 
   const messages = useMemo(() => {
     return getMessages(conversationId, currentMessageId);

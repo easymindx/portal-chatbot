@@ -28,10 +28,10 @@ const AppContent: React.FC<Props> = (props) => {
   const { getPageLabel } = usePageLabel();
   const { switchOpen: switchDrawer } = useDrawer();
   const navigate = useNavigate();
-  const { conversationId } = useParams();
+  const { conversationId, userId } = useParams();
   const { conversations, getTitle, updateTitle, deleteConversation, clearConversations: clear } = useConversation();
   const { starredBots, recentlyUsedUnsterredBots } = useBot();
-  const { newChat, isGeneratedTitle } = useChat();
+  const { newChat, isGeneratedTitle } = useChat(userId);
   const { isConversationOrNewChat, pathPattern } = usePageTitlePathPattern();
   const { isAdmin, isAllowFeedback } = useUser();
 

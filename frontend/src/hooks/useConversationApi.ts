@@ -24,9 +24,9 @@ const useConversationApi = () => {
         keepPreviousData: true,
       });
     },
-    getConversation: (conversationId?: string) => {
+    getConversation: (conversationId?: string, userId?: string) => {
       return http.get<Conversation>(
-        !conversationId ? null : `conversation/${conversationId}`,
+        !conversationId ? null : `conversation/${conversationId}${userId ? `?userId=${userId ?? ''}` : ''}`,
         {
           keepPreviousData: true,
         }
@@ -37,9 +37,9 @@ const useConversationApi = () => {
         ...input,
       });
     },
-    getRelatedDocuments: (conversationId?: string) => {
+    getRelatedDocuments: (conversationId?: string, userId?: string) => {
       return http.get<RelatedDocument[]>(
-        !conversationId ? null : `conversation/${conversationId}/related-documents`, {
+        !conversationId ? null : `conversation/${conversationId}/related-documents${userId ? `?userid=${userId ?? ''}` : ''}`, {
         keepPreviousData: true,
       });
     },

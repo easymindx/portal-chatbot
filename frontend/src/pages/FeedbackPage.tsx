@@ -4,6 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { FeedbackMessage } from '../@types/conversation';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useFeedback from '../hooks/useFeedback';
+import { Link } from 'react-router-dom';
 
 type Props = {
   className?: string;
@@ -54,14 +55,13 @@ const FeedbackPage: React.FC<Props> = ({ className }) => {
                   <span className="font-medium text-gray-700">
                     User: <span className="font-semibold">{item.user.email}</span>
                   </span>
-                  <a
-                    href={`/${item.conversationId}#message-${item.messageId}`}
-                    target="_blank"
+                  <Link
+                    to={`/${item.conversationId}/${item.user.id}#${item.messageId}`}
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:text-blue-700 flex items-center"
                   >
                     Open Chat <PiArrowSquareOutFill className="ml-1" />
-                  </a>
+                  </Link>
                 </div>
                 {/* Feedback comment */}
                 <div className="text-gray-600 text-sm">

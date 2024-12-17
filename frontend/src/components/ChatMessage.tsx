@@ -34,6 +34,8 @@ type Props = BaseProps & {
   tools?: AgentToolsProps[];
   chatContent?: DisplayMessageContent;
   isStreaming?: boolean;
+  isSelected?: boolean;
+  isDisabled?: boolean;
   relatedDocuments?: RelatedDocument[];
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
@@ -125,7 +127,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3')} id={`message-${chatContent?.id}`}>
+    <div className={twMerge(props.className, 'grid grid-cols-12 gap-2 p-3', props.isSelected ? 'bg-light-yellow' : '')} id={chatContent?.id}>
       <div className="col-start-1 lg:col-start-2 ">
         {(chatContent?.sibling.length ?? 0) > 1 && (
           <div className="flex items-center justify-start text-sm lg:justify-end">
@@ -316,6 +318,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === 'user' && !isEdit && (
             <ButtonIcon
               className="text-dark-gray"
+              disabled={props.isDisabled}
               onClick={() => {
                 setChangedContent(chatContent.content[firstTextContent].body);
                 setIsEdit(true);
@@ -327,6 +330,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <div className="flex">
               <ButtonIcon
                 className="text-dark-gray"
+                disabled={props.isDisabled}
                 onClick={() => setIsFeedbackUpOpen(true)}>
                 {chatContent.feedback && chatContent.feedback.thumbsUp ? (
                   <PiThumbsUpFill />
@@ -336,6 +340,7 @@ const ChatMessage: React.FC<Props> = (props) => {
               </ButtonIcon>
               <ButtonIcon
                 className="text-dark-gray"
+                disabled={props.isDisabled}
                 onClick={() => setIsFeedbackOpen(true)}>
                 {chatContent.feedback && !chatContent.feedback.thumbsUp ? (
                   <PiThumbsDownFill />
