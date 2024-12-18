@@ -325,7 +325,6 @@ describe("Bedrock Knowledge Base Stack", () => {
       sourceUrls: knowledge.source_urls.L.map(
         (sourceUrl: any) => sourceUrl.S
       ),
-      existKnowledgeBaseId: undefined
     });
 
     return Template.fromStack(stack);
