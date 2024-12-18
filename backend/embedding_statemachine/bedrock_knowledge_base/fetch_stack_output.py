@@ -18,7 +18,7 @@ def handler(event, context):
 
     # Note: stack naming rule is defined on:
     # cdk/bin/bedrock-knowledge-base.ts
-    stack_name = f"cdr_ai_poc_chatbot_stack_{bot_id}"
+    stack_name = f"BrChatKbStack{bot_id}"
 
     response = cf_client.describe_stacks(StackName=stack_name)
     outputs = response["Stacks"][0]["Outputs"]
