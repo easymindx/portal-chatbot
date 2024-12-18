@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ApiPublishmentStack } from "../lib/api-publishment-stack";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import { ApiPublicationOutput } from "../lib/bedrock-chat-stack";
 
 const app = new cdk.App();
 
@@ -51,16 +52,16 @@ console.log(
 console.log(`PUBLISHED_API_ID: ${PUBLISHED_API_ID}`);
 console.log(`PUBLISHED_API_ALLOWED_ORIGINS: ${PUBLISHED_API_ALLOWED_ORIGINS}`);
 
-const webAclArn = cdk.Fn.importValue("PublishedApiWebAclArn");
+const webAclArn = cdk.Fn.importValue(ApiPublicationOutput.PublishedApiWebAclArn);
 
 const conversationTableName = cdk.Fn.importValue(
-  "BedrockClaudeChatConversationTableName"
+  ApiPublicationOutput.BedrockClaudeChatConversationTableName
 );
 const tableAccessRoleArn = cdk.Fn.importValue(
-  "BedrockClaudeChatTableAccessRoleArn"
+  ApiPublicationOutput.BedrockClaudeChatTableAccessRoleArn
 );
 const largeMessageBucketName = cdk.Fn.importValue(
-  "BedrockClaudeChatLargeMessageBucketName"
+  ApiPublicationOutput.BedrockClaudeChatLargeMessageBucketName
 );
 
 // NOTE: DO NOT change the stack id naming rule.

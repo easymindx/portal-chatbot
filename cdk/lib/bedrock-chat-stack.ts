@@ -23,6 +23,7 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as path from "path";
 import { BedrockCustomBotCodebuild } from "./constructs/bedrock-custom-bot-codebuild";
+import { getResourceName } from "./utils/resource-names";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -42,6 +43,13 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableLambdaSnapStart: boolean;
 }
 
+export enum ApiPublicationOutput {
+  PublishedApiWebAclArn = "cdr-ai-poc-chatbot-published-api-web-acl-arn",
+  BedrockClaudeChatConversationTableName = "cdr-ai-poc-chatbot-bedrock-claude-chat-conversation-tablename",
+  BedrockClaudeChatTableAccessRoleArn = "cdr-ai-poc-chatbot-bedrock-claude-chat-table-access-role-arn",
+  BedrockClaudeChatLargeMessageBucketName = "cdr-ai-poc-chatbot-bedrock-claude-chat-large-message-bucketname",
+}
+
 export class BedrockChatStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BedrockChatStackProps) {
     super(scope, id, {
@@ -51,7 +59,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const idp = identityProvider(props.identityProviders);
 
-    const accessLogBucket = new Bucket(this, "AccessLogBucket", {
+    const accessLogBucket = new Bucket(this, getResourceName('access-log-bucket'), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -61,7 +69,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     // Bucket for source code
-    const sourceBucket = new Bucket(this, "SourceBucketForCodeBuild", {
+    const sourceBucket = new Bucket(this, getResourceName("source-buckek-for-codebuild"), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -71,7 +79,7 @@ export class BedrockChatStack extends cdk.Stack {
       serverAccessLogsBucket: accessLogBucket,
       serverAccessLogsPrefix: "SourceBucketForCodeBuild",
     });
-    new s3deploy.BucketDeployment(this, "SourceDeploy", {
+    new s3deploy.BucketDeployment(this, getResourceName("source-deploy"), {
       sources: [
         s3deploy.Source.asset(path.join(__dirname, "../../"), {
           ignoreMode: IgnoreMode.GIT,
@@ -105,7 +113,7 @@ export class BedrockChatStack extends cdk.Stack {
     // CodeBuild used for api publication
     const apiPublishCodebuild = new ApiPublishCodebuild(
       this,
-      "ApiPublishCodebuild",
+      getResourceName("api-publish-codebuild"),
       {
         sourceBucket,
       }
@@ -113,20 +121,20 @@ export class BedrockChatStack extends cdk.Stack {
     // CodeBuild used for KnowledgeBase
     const bedrockCustomBotCodebuild = new BedrockCustomBotCodebuild(
       this,
-      "BedrockKnowledgeBaseCodebuild",
+      getResourceName("bedrock-kb-codebuild"),
       {
         sourceBucket,
       }
     );
 
-    const frontend = new Frontend(this, "Frontend", {
+    const frontend = new Frontend(this,getResourceName("frontend"), {
       accessLogBucket,
       webAclId: props.webAclId,
       enableMistral: props.enableMistral,
       enableIpV6: props.enableIpV6,
     });
 
-    const auth = new Auth(this, "Auth", {
+    const auth = new Auth(this, getResourceName("auth"), {
       origin: frontend.getOrigin(),
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
@@ -134,7 +142,7 @@ export class BedrockChatStack extends cdk.Stack {
       autoJoinUserGroups: props.autoJoinUserGroups,
       selfSignUpEnabled: props.selfSignUpEnabled,
     });
-    const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
+    const largeMessageBucket = new Bucket(this, getResourceName("large-bessage-bucket"), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -142,20 +150,20 @@ export class BedrockChatStack extends cdk.Stack {
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "LargeMessageBucket",
+      serverAccessLogsPrefix: "large-bessage-bucket",
     });
 
-    const database = new Database(this, "Database", {
+    const database = new Database(this, getResourceName("database"), {
       // Enable PITR to export data to s3
       pointInTimeRecovery: true,
     });
 
-    const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+    const usageAnalysis = new UsageAnalysis(this, getResourceName("usage-analysis"), {
       accessLogBucket,
       sourceDatabase: database,
     });
 
-    const backendApi = new Api(this, "BackendApi", {
+    const backendApi = new Api(this, getResourceName("backend-api"), {
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,
@@ -171,7 +179,7 @@ export class BedrockChatStack extends cdk.Stack {
     props.documentBucket.grantReadWrite(backendApi.handler);
 
     // For streaming response
-    const websocket = new WebSocket(this, "WebSocket", {
+    const websocket = new WebSocket(this, getResourceName("websocket"), {
       accessLogBucket,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
@@ -207,7 +215,7 @@ export class BedrockChatStack extends cdk.Stack {
       maxAge: 3000,
     });
 
-    const embedding = new Embedding(this, "Embedding", {
+    const embedding = new Embedding(this, getResourceName("embedding"), {
       bedrockRegion: props.bedrockRegion,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
@@ -219,7 +227,7 @@ export class BedrockChatStack extends cdk.Stack {
     // WebAcl for published API
     const webAclForPublishedApi = new WebAclForPublishedApi(
       this,
-      "WebAclForPublishedApi",
+      getResourceName("web-acl-for-published-api"),
       {
         allowedIpV4AddressRanges: props.publishedApiAllowedIpV4AddressRanges,
         allowedIpV6AddressRanges: props.publishedApiAllowedIpV6AddressRanges,
@@ -236,19 +244,19 @@ export class BedrockChatStack extends cdk.Stack {
     // Outputs for API publication
     new CfnOutput(this, "PublishedApiWebAclArn", {
       value: webAclForPublishedApi.webAclArn,
-      exportName: "PublishedApiWebAclArn",
+      exportName: ApiPublicationOutput.PublishedApiWebAclArn,
     });
     new CfnOutput(this, "ConversationTableName", {
       value: database.table.tableName,
-      exportName: "BedrockClaudeChatConversationTableName",
+      exportName: ApiPublicationOutput.BedrockClaudeChatConversationTableName,
     });
     new CfnOutput(this, "TableAccessRoleArn", {
       value: database.tableAccessRole.roleArn,
-      exportName: "BedrockClaudeChatTableAccessRoleArn",
+      exportName: ApiPublicationOutput.BedrockClaudeChatTableAccessRoleArn,
     });
     new CfnOutput(this, "LargeMessageBucketName", {
       value: largeMessageBucket.bucketName,
-      exportName: "BedrockClaudeChatLargeMessageBucketName",
+      exportName: ApiPublicationOutput.BedrockClaudeChatLargeMessageBucketName,
     });
   }
 }
