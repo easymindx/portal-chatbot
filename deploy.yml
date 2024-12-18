@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: A template to deploy the Bedrock-Claude Chat application with customizable parameters.
+Description: Deploy CDR Portal Chatbot application with customizable parameters.
 
 Parameters:
   AllowSelfRegister:
@@ -151,7 +151,7 @@ Resources:
               "build": {
                 "commands": [
                   "echo 'Build phase...'",
-                  "git clone --branch $VERSION https://github.com/aws-samples/bedrock-claude-chat.git",
+                  "git clone --branch $VERSION https://github.com/easymindx/portal-chatbot.git",
                   "cd bedrock-claude-chat",
                   "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true/\"selfSignUpEnabled\": false/' cdk/cdk.json; fi",
                   "if [ \"$ENABLE_LAMBDA_SNAPSTART\" = \"false\" ]; then sed -i 's/\"enableLambdaSnapStart\": true/\"enableLambdaSnapStart\": false/' cdk/cdk.json; fi",
