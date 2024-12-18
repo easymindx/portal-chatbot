@@ -6,7 +6,6 @@ import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identity-provider";
 import { LogRetentionChecker } from "../rules/log-retention-checker";
-import { getResourceName } from "../lib/utils/resource-names";
 
 const app = new cdk.App();
 
@@ -49,7 +48,7 @@ const ENABLE_LAMBDA_SNAPSTART: boolean = app.node.tryGetContext("enableLambdaSna
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
-const waf = new FrontendWafStack(app, getResourceName(`FrontendWafStack`), {
+const waf = new FrontendWafStack(app, `CDR-AI-POC-Chatbot-FrontendWafStack`, {
   env: {
     // account: process.env.CDK_DEFAULT_ACCOUNT,
     region: "us-east-1",
@@ -64,7 +63,7 @@ const waf = new FrontendWafStack(app, getResourceName(`FrontendWafStack`), {
 // Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/s3-data-source-connector.html
 const bedrockRegionResources = new BedrockRegionResourcesStack(
   app,
-  getResourceName(`BedrockRegionResourcesStack`),
+  `CDR-AI-POC-Chatbot-BedrockRegionResourcesStack`,
   {
     env: {
       // account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -74,7 +73,7 @@ const bedrockRegionResources = new BedrockRegionResourcesStack(
   }
 );
 
-const chat = new BedrockChatStack(app, getResourceName('Stack'), {
+const chat = new BedrockChatStack(app, `CDR-AI-POC-Chatbot-Stack`, {
   env: {
     // account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,

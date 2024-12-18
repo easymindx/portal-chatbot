@@ -198,15 +198,6 @@ export class Auth extends Construct {
       }
     );
 
-    const feedbackAllowedGroup = new CfnUserPoolGroup(
-      this,
-      "FeedbackAllowedGroup",
-      {
-        groupName: "FeedbackAllowed",
-        userPoolId: userPool.userPoolId,
-      }
-    );
-
     if (props.autoJoinUserGroups.length >= 1) {
       /**
        * Create a Cognito trigger to add a new user to the group specified with `autoJoinUserGroups`.
