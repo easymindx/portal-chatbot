@@ -60,16 +60,16 @@
     ],
     "identityProviders": [],
     "userPoolDomainPrefix": "",
-    "allowedSignUpEmailDomains": [],
+    "allowedSignUpEmailDomains": ["esimplicity.com", "cms.hhs.gov"],
     "autoJoinUserGroups": [],
-    "selfSignUpEnabled": true,
+    "selfSignUpEnabled": false,
     "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "publishedApiAllowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
     "enableRagReplicas": true,
-    "enableBedrockCrossRegionInference": true,
+    "enableBedrockCrossRegionInference": false,
     "enableLambdaSnapStart": true
   }
 }

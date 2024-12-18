@@ -59,7 +59,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const idp = identityProvider(props.identityProviders);
 
-    const accessLogBucket = new Bucket(this, getResourceName('access-log-bucket'), {
+    const accessLogBucket = new Bucket(this, getResourceName('AccessLogBucket'), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -69,7 +69,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     // Bucket for source code
-    const sourceBucket = new Bucket(this, getResourceName("source-buckek-for-codebuild"), {
+    const sourceBucket = new Bucket(this, getResourceName("SourceBucketForCodeBuild"), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -79,7 +79,7 @@ export class BedrockChatStack extends cdk.Stack {
       serverAccessLogsBucket: accessLogBucket,
       serverAccessLogsPrefix: "SourceBucketForCodeBuild",
     });
-    new s3deploy.BucketDeployment(this, getResourceName("source-deploy"), {
+    new s3deploy.BucketDeployment(this, getResourceName("SourceDeploy"), {
       sources: [
         s3deploy.Source.asset(path.join(__dirname, "../../"), {
           ignoreMode: IgnoreMode.GIT,
@@ -113,7 +113,7 @@ export class BedrockChatStack extends cdk.Stack {
     // CodeBuild used for api publication
     const apiPublishCodebuild = new ApiPublishCodebuild(
       this,
-      getResourceName("api-publish-codebuild"),
+      getResourceName("ApiPublichCodebuild"),
       {
         sourceBucket,
       }
@@ -121,20 +121,20 @@ export class BedrockChatStack extends cdk.Stack {
     // CodeBuild used for KnowledgeBase
     const bedrockCustomBotCodebuild = new BedrockCustomBotCodebuild(
       this,
-      getResourceName("bedrock-kb-codebuild"),
+      getResourceName("BedrockKnowledgeBaseCodebuild"),
       {
         sourceBucket,
       }
     );
 
-    const frontend = new Frontend(this,getResourceName("frontend"), {
+    const frontend = new Frontend(this,getResourceName("Frontend"), {
       accessLogBucket,
       webAclId: props.webAclId,
       enableMistral: props.enableMistral,
       enableIpV6: props.enableIpV6,
     });
 
-    const auth = new Auth(this, getResourceName("auth"), {
+    const auth = new Auth(this, getResourceName("Auth"), {
       origin: frontend.getOrigin(),
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
@@ -142,7 +142,7 @@ export class BedrockChatStack extends cdk.Stack {
       autoJoinUserGroups: props.autoJoinUserGroups,
       selfSignUpEnabled: props.selfSignUpEnabled,
     });
-    const largeMessageBucket = new Bucket(this, getResourceName("large-bessage-bucket"), {
+    const largeMessageBucket = new Bucket(this, getResourceName("LargeMessageBucket"), {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -150,20 +150,20 @@ export class BedrockChatStack extends cdk.Stack {
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "large-bessage-bucket",
+      serverAccessLogsPrefix: "LargeMessageBucket",
     });
 
-    const database = new Database(this, getResourceName("database"), {
+    const database = new Database(this, getResourceName("Database"), {
       // Enable PITR to export data to s3
       pointInTimeRecovery: true,
     });
 
-    const usageAnalysis = new UsageAnalysis(this, getResourceName("usage-analysis"), {
+    const usageAnalysis = new UsageAnalysis(this, getResourceName("UsageAnalysis"), {
       accessLogBucket,
       sourceDatabase: database,
     });
 
-    const backendApi = new Api(this, getResourceName("backend-api"), {
+    const backendApi = new Api(this, getResourceName("BackendApi"), {
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,
@@ -179,7 +179,7 @@ export class BedrockChatStack extends cdk.Stack {
     props.documentBucket.grantReadWrite(backendApi.handler);
 
     // For streaming response
-    const websocket = new WebSocket(this, getResourceName("websocket"), {
+    const websocket = new WebSocket(this, getResourceName("WebSocket"), {
       accessLogBucket,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
@@ -215,7 +215,7 @@ export class BedrockChatStack extends cdk.Stack {
       maxAge: 3000,
     });
 
-    const embedding = new Embedding(this, getResourceName("embedding"), {
+    const embedding = new Embedding(this, "Embedding", {
       bedrockRegion: props.bedrockRegion,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
@@ -227,7 +227,7 @@ export class BedrockChatStack extends cdk.Stack {
     // WebAcl for published API
     const webAclForPublishedApi = new WebAclForPublishedApi(
       this,
-      getResourceName("web-acl-for-published-api"),
+      getResourceName("WebAclForPublishedApi"),
       {
         allowedIpV4AddressRanges: props.publishedApiAllowedIpV4AddressRanges,
         allowedIpV6AddressRanges: props.publishedApiAllowedIpV6AddressRanges,

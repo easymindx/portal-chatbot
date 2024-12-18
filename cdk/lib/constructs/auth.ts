@@ -202,7 +202,7 @@ export class Auth extends Construct {
       this,
       "FeedbackAllowedGroup",
       {
-        groupName: "PublishAllowed",
+        groupName: "FeedbackAllowed",
         userPoolId: userPool.userPoolId,
       }
     );
